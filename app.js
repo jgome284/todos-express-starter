@@ -5,6 +5,10 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var passport = require('passport');
+var session = require('express-session');
+
+var SQLiteStore = require('connect-sqlite3')(session);
 
 // add routers
 var indexRouter = require('./routes/index');
@@ -23,7 +27,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+// add session support with SQLite db storage
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: false,
+  store: new SQLiteStore({ db: 'sessions.db', dir: './var/db' })
+}));
+// use passport to authenticate session
+app.use(passport.authenticate('session'));
 app.use('/', indexRouter);
 app.use('/', authRouter);
 
